@@ -29,6 +29,8 @@ Ensure you have:
 
 ### ✅ kubectl (Kubernetes CLI)
 
+#### Linux / macOS
+
 ```bash
 curl -LO "https://dl.k8s.io/release/v1.32.0/bin/$(uname | tr '[:upper:]' '[:lower:]')/amd64/kubectl"
 chmod +x kubectl
@@ -36,9 +38,19 @@ sudo mv kubectl /usr/local/bin/
 kubectl version --client
 ```
 
+#### Windows (PowerShell)
+
+```powershell
+Invoke-WebRequest -Uri "https://dl.k8s.io/release/v1.32.0/bin/windows/amd64/kubectl.exe" -OutFile "kubectl.exe"
+```
+
+Make sure to add the path to `kubectl.exe` to your system's `PATH` variable.
+
 ---
 
 ### ✅ kind (Kubernetes in Docker)
+
+#### Linux / macOS
 
 ```bash
 curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-$(uname)-amd64
@@ -47,14 +59,29 @@ sudo mv ./kind /usr/local/bin/kind
 kind version
 ```
 
+#### Windows (PowerShell)
+
+```powershell
+Invoke-WebRequest -Uri https://kind.sigs.k8s.io/dl/v0.22.0/kind-windows-amd64 -OutFile kind.exe
+```
+
+Add the `kind.exe` path to your `PATH` environment variable.
+
 ---
 
 ### ✅ helm (Kubernetes package manager)
+
+#### Linux / macOS
 
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm version
 ```
+
+#### Windows (PowerShell)
+
+Download and unzip from: [https://github.com/helm/helm/releases/latest](https://github.com/helm/helm/releases/latest)
+Then add the extracted `helm.exe` to your `PATH`.
 
 ---
 
