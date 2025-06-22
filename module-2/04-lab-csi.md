@@ -41,6 +41,7 @@ spec:
   hostPath:
     path: "/tmp/k8s-csi-lab"
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
 ```
 
 ```bash
@@ -62,6 +63,8 @@ spec:
   resources:
     requests:
       storage: 500Mi
+  volumeName: hostpath-pv
+  storageClassName: ""
 ```
 
 ```bash
@@ -103,6 +106,14 @@ kubectl apply -f pod-with-pvc.yaml
 
 ### Step 1.4: Test Persistence
 
+> 💡 **Note for macOS users**: Since Kind runs Kubernetes nodes as Docker containers, the `hostPath` (`/tmp/k8s-csi-lab`) refers to the container's filesystem, not your local macOS `/tmp`. You won't see the file from your host. To verify:
+>
+> ```bash
+> docker exec -it kind-worker bash
+> ls /tmp/k8s-csi-lab/
+> ```
+> Replace `kind-worker` with the actual node your pod is scheduled on (check with `kubectl get pod csi-demo-pod -o wide`).
+
 ```bash
 kubectl exec -it csi-demo-pod -- sh -c "echo 'Hello from CSI' > /data/test.txt && cat /data/test.txt"
 kubectl delete pod csi-demo-pod
@@ -114,110 +125,88 @@ kubectl exec -it csi-demo-pod -- cat /data/test.txt
 
 ## ⚙️ Part 2: Dynamic Provisioning with HostPath CSI Driver
 
-### Step 2.1: Install the HostPath CSI Driver
+### Step 2.1: Install VolumeSnapshot CRDs and Snapshot Controller
 
 ```bash
-kubectl apply -k "https://github.com/kubernetes-csi/csi-driver-host-path/deploy/kubernetes-1.25/?ref=v1.10.0"
+SNAPSHOTTER_BRANCH=release-6.3
+kubectl apply -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_BRANCH}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml"
+kubectl apply -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_BRANCH}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml"
+kubectl apply -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_BRANCH}/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml"
+
+SNAPSHOTTER_VERSION=v6.3.3
+kubectl apply -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_VERSION}/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml"
+kubectl apply -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_VERSION}/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml"
 ```
 
-Wait until pods are ready:
+### Step 2.2: Deploy the HostPath CSI Driver (latest Kubernetes support)
 
 ```bash
-kubectl get pods -n hostpath-csi
+cd ~
+git clone https://github.com/kubernetes-csi/csi-driver-host-path.git
+cd csi-driver-host-path
+deploy/kubernetes-latest/deploy.sh
 ```
 
-### Step 2.2: Create a Dynamic StorageClass
-
-**storageclass.yaml**:
-
-```yaml
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: csi-hostpath-sc
-provisioner: hostpath.csi.k8s.io
-volumeBindingMode: WaitForFirstConsumer
-```
+### Step 2.3: Deploy Example StorageClass, PVC, and App Pod
 
 ```bash
-kubectl apply -f storageclass.yaml
+kubectl apply -f examples/csi-storageclass.yaml
+kubectl apply -f examples/csi-pvc.yaml
+kubectl apply -f examples/csi-app.yaml
 ```
 
-### Step 2.3: Create a PVC with StorageClass
-
-**pvc-dynamic.yaml**:
-
-```yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: csi-dynamic-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: csi-hostpath-sc
-```
+Validate:
 
 ```bash
-kubectl apply -f pvc-dynamic.yaml
 kubectl get pvc
+kubectl get pv
+kubectl describe pod my-csi-app
 ```
 
-### Step 2.4: Deploy a Pod Using Dynamic PVC
-
-**pod-dynamic.yaml**:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: dynamic-csi-pod
-spec:
-  containers:
-  - name: alpine
-    image: alpine
-    command: ["sh", "-c", "while true; do sleep 3600;"]
-    volumeMounts:
-    - mountPath: "/data"
-      name: dynamic-vol
-  volumes:
-  - name: dynamic-vol
-    persistentVolumeClaim:
-      claimName: csi-dynamic-pvc
-```
+Write to volume:
 
 ```bash
-kubectl apply -f pod-dynamic.yaml
+```bash
+kubectl exec -it my-csi-app -- sh -c "echo 'Dynamic CSI test' > /data/hello-world"
+```
 ```
 
-Test writing:
+Check from CSI plugin container:
 
 ```bash
-kubectl exec -it dynamic-csi-pod -- sh -c "echo 'Dynamic CSI working' > /data/hello.txt && cat /data/hello.txt"
+kubectl exec -it $(kubectl get pods --selector app.kubernetes.io/name=csi-hostpathplugin -o jsonpath='{.items[0].metadata.name}') -c hostpath -- find / -name hello-world
 ```
 
 ---
 
-## 🖼️ CSI Architecture Diagram (Dynamic Provisioning)
+## 🧪 Final Challenge – Snapshot and Restore
 
-![CSI Architecture](assets/csi-architecture.png)
+<details>
+<summary>Click to expand challenge details</summary>
 
-> * `kubelet` talks to the CSI driver via sockets
-> * CSI controller & node plugins handle PV/PVC provisioning
-> * The external-provisioner automates PV creation
+You have successfully set up a dynamic provisioning environment using the HostPath CSI driver. Now, let's take it a step further with a real-world scenario: creating a snapshot of your application's data and restoring it.
 
----
+🎯 **Challenge**: Without step-by-step instructions, your task is to:
+
+1. Create a **VolumeSnapshot** from the PVC used by your application.
+2. Create a **new PersistentVolumeClaim** from that snapshot.
+3. Mount the restored PVC into a **second pod**.
+4. Validate that the file you created (`hello-world`) still exists.
+
+This challenge will test your ability to:
+- Work with snapshot APIs
+- Understand StorageClasses and restore workflows
+- Operate independently using Kubernetes documentation
+
+Use `kubectl explain` and [official snapshot documentation](https://kubernetes.io/docs/concepts/storage/volume-snapshots/) if needed.
+</details>
 
 ## 🧹 Clean Up
 
 ```bash
-kubectl delete pod dynamic-csi-pod
-kubectl delete pvc csi-dynamic-pvc
-kubectl delete sc csi-hostpath-sc
-kubectl delete -k "https://github.com/kubernetes-csi/csi-driver-host-path/deploy/kubernetes-1.25/?ref=v1.10.0"
+cd ~/csi-driver-host-path
+kubectl delete -f examples
+deploy/kubernetes-latest/destroy.sh
 
 kubectl delete -f pod-with-pvc.yaml
 kubectl delete -f pvc.yaml
@@ -230,14 +219,15 @@ rm -rf /tmp/k8s-csi-lab
 ## ✅ Checklist
 
 * [ ] Performed static provisioning with hostPath
-* [ ] Installed HostPath CSI driver
+* [ ] Installed HostPath CSI driver using official method
+* [ ] Deployed VolumeSnapshot CRDs and Controller
 * [ ] Created a StorageClass and PVC for dynamic provisioning
 * [ ] Mounted PVC to a pod and validated persistence
-* [ ] Reviewed CSI architecture diagram
+* [ ] Reviewed CSI architecture and validated volume in plugin container
 * [ ] Cleaned up all resources
 
 ---
 
 ## 💬 What's Next?
 
-You're now equipped to understand both static and dynamic CSI usage in Kubernetes. Future labs may explore real-world drivers like AWS EBS or Longhorn in cloud or VM environments.
+You're now equipped to understand both static and dynamic CSI usage in Kubernetes. Future labs may explore real-world drivers like AWS EBS, Longhorn, or Ceph.

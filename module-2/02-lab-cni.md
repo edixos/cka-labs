@@ -187,8 +187,10 @@ cilium connectivity test
 ---
 
 ## 🧹 Step 8: Clean Up
+We will keep the cluster for further labs, but you can delete the namespaces to clean up resources:
+
 ```bash
-kind delete cluster --name cni-lab
+kubectl delete ns ns-a ns-b
 ```
 
 ---
@@ -202,7 +204,6 @@ kind delete cluster --name cni-lab
 * [x] Created Service for DNS-based communication
 * [x] Applied a Network Policy to restrict traffic
 * [x] (Optional) Ran `cilium connectivity test`
-* [x] Cleaned up the environment
 
 ---
 

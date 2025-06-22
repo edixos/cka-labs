@@ -34,7 +34,7 @@ kubectl get nodes -o jsonpath="{.items[*].status.nodeInfo.containerRuntimeVersio
 Expected output (on Kind):
 
 ```
-containerd://1.6.x
+containerd://2.0.3
 ```
 
 ---
@@ -55,13 +55,13 @@ Take note of the pod name, node, and IP address.
 Get the Docker container name for the Kind node:
 
 ```bash
-docker ps --format '{{.Names}}' | grep cni-lab-control-plane
+docker ps --format '{{.Names}}' | grep <node-name>
 ```
 
 Then open a shell inside the container:
 
 ```bash
-docker exec -it cni-lab-control-plane bash
+docker exec -it <node-name> bash
 ```
 
 Inside, check for containerd socket:
@@ -74,7 +74,11 @@ ls /run/containerd/containerd.sock
 
 ## 🔧 Step 4 (Optional): Use `crictl` to Inspect the Runtime
 
-> Note: `crictl` may not be pre-installed in Kind. To install:
+> Note: `crictl` may not be pre-installed in Kind and configured. 
+
+<details>
+<summary>Click to install and configure `crictl`</summary>
+To install:
 
 ```bash
 apt update && apt install -y curl
@@ -87,6 +91,7 @@ Configure it:
 ```bash
 echo "runtime-endpoint: unix:///run/containerd/containerd.sock" > /etc/crictl.yaml
 ```
+</details>
 
 ### 🔍 Explore with `crictl`
 
