@@ -15,7 +15,7 @@ This lab helps you discover how to interact with a Kubernetes cluster using `kub
 
 ## 🚀 Step 0: Create a Kind Cluster
 
-Before starting, make sure Docker is running and the following configuration is used to create your Kind cluster:
+Before starting, if you don't have already created the cluster in the previous module, make sure Docker is running and the following configuration is used to create your Kind cluster:
 
 ### `kind-config.yaml`
 
@@ -48,39 +48,33 @@ kubectl version
 
 > Make sure you have a running cluster and `kubectl` is configured correctly.
 
----
+## 🔍 Step 2 – Explore API Resources via kubectl proxy
 
-## 🔍 Step 2: Discover API Resources
-
+### Start the proxy:
 ```bash
-kubectl api-resources
-kubectl get --raw /apis | jq
-kubectl explain pod
-kubectl explain deployment.spec.template.spec.containers
+kubectl proxy
 ```
 
-> Explore the structure of Kubernetes objects and API groups.
+Then open your browser and explore:
+- http://localhost:8001/
+- http://localhost:8001/api/v1
+- http://localhost:8001/apis
 
----
-
-## 🔧 Step 3: Clean Up (Optional)
-
-To remove the local cluster and reset your environment:
-
+Use curl for raw access:
 ```bash
-kind delete cluster --name cka-lab
+curl http://localhost:8001/apis/apps/v1
 ```
+
+> These endpoints let you browse live Kubernetes API structure and resources.
 
 ---
 
 ## ✅ Checklist
 
-* [ ] Created Kind cluster with Kubernetes v1.32
 * [ ] Verified cluster access with `kubectl`
-* [ ] Explored API resources with `kubectl explain` and raw queries
+* [ ] Explored API resources via `kubectl proxy` and HTTP APIs
 * [ ] Cluster cleaned up after completion
 
----
 
 ## 💬 What’s Next?
 

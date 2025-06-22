@@ -185,25 +185,12 @@ kubectl explain deployment.spec.template
 
 ---
 
-## 🔧 Step 5: Clean Up (Teardown)
-
-To remove the local cluster and reset your environment:
-
-```bash
-kind delete cluster --name cka-lab
-```
-
-> ✅ Always clean up your environment after each lab to ensure you're starting fresh in the next one.
-
----
-
 ## ✅ Checklist
 
 * [ ] All tools (`kubectl`, `kind`) installed and working
 * [ ] Kind cluster created with Kubernetes v1.32
 * [ ] `kubectl` returns cluster info and node details
 * [ ] Able to use `kubectl explain` and list API resources
-* [ ] Cluster cleaned up with `kind delete cluster`
 
 ---
 
