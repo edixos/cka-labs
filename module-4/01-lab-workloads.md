@@ -13,11 +13,6 @@
 ## 🔧 Prerequisites
 
 - A running **Kind cluster** with access to `kubectl`
-- Namespace `module4-lab` created:
-  ```bash
-  kubectl create ns module4-lab
-  kubectl config set-context --current --namespace=module4-lab
-  ```
 
 ---
 
@@ -67,22 +62,35 @@ kubectl get pvc
 - Patch the deployment or create a new one with HTTP probes on port 80
 
 ```yaml
-livenessProbe:
-  httpGet:
-    path: /
-    port: 80
-  initialDelaySeconds: 5
-  periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
 
-readinessProbe:
-  httpGet:
-    path: /
-    port: 80
-  initialDelaySeconds: 3
-  periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 5
 ```
 
 Apply and observe pod status using `kubectl describe pod`
+
+
+To see the probe in action you can patch the deployment to add a command that simulates a failure:
+
+```bash
+kubectl patch deployment webapp --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/livenessProbe/httpGet/path", "value": "/invalid"}]'
+```
+
+fix the liveness probe by reverting the patch:
+
+```bash
+kubectl patch deployment webapp --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/livenessProbe/httpGet/path", "value": "/"}]'
+```
 
 ---
 
@@ -96,19 +104,53 @@ kubectl create secret generic db-creds \
 
 Mount into pod or expose via env vars:
 ```yaml
-envFrom:
-  - configMapRef:
-      name: app-config
-  - secretRef:
-      name: db-creds
+        envFrom:
+          - configMapRef:
+              name: app-config
+          - secretRef:
+              name: db-creds
 ```
+
+---
+
+## Challenge - Mount ConfigMap and Secret in a Volume
+
+- Modify the deployment to mount the `ConfigMap` and `Secret` as files in a volume
+
+<details >
+<summary>Deployment YAML Snippet</summary>
+
+```yaml
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/config
+          - name: secret-volume
+            mountPath: /etc/secret
+
+      volumes:
+        - name: config-volume
+          configMap:
+            name: app-config
+        - name: secret-volume
+          secret:
+            secretName: db-creds
+```
+
+</details>
+
 
 ---
 
 ## 🧼 Cleanup
 
 ```bash
-kubectl delete ns module4-lab
+kubectl delete deployment webapp
+kubectl delete configmap app-config
+kubectl delete secret db-creds
+kubectl delete pvc --all
+kubectl delete svc webapp
+kubectl delete statefulset mysql
+kubectl delete svc mysql
 ```
 
 ---
