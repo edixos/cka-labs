@@ -33,6 +33,7 @@ Ensure the following commands are available on both VMs:
 alias k='kubectl'
 source <(kubectl completion bash)
 complete -F __start_kubectl k
+source ~/.bashrc
 ```
 
 ## ⚙️ Step 1: Bootstrap the Control Plane (Master Node)
@@ -98,15 +99,20 @@ kubectl get svc nginx
 
 Try accessing it via the **worker VM’s private IP** and the given NodePort.
 
----
+## 🧑‍💻 Challenge: Upgrade the cluster
 
-## 🧹 Clean Up (Optional)
+For this challenge, you need to upgrade your cluster to Kubernetes v1.33.2. Note that this is an advanced task and may require additional steps such as unholding packages, updating the APT repository, and applying the upgrade plan.
 
+At the end of this challenge, your cluster should be running Kubernetes v1.33.2 for both the master and worker nodes.
+
+Expected the following output when you check the nodes:
 ```bash
-sudo kubeadm reset -f
-sudo rm -rf ~/.kube
-sudo rm -rf /etc/cni /etc/kubernetes /var/lib/etcd /var/lib/cni /var/lib/kubelet
+$ kubectl get nodes
+NAME                                                    STATUS   ROLES           AGE   VERSION
+trainee-demo-master.europe-west1-b.c.ekp-dev.internal   Ready    control-plane   14m   v1.33.2
+trainee-demo-worker.europe-west1-b.c.ekp-dev.internal   Ready    <none>          12m   v1.33.2
 ```
+
 
 ---
 
