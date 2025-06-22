@@ -1,106 +1,158 @@
-# 🧪 CNI Lab – Kubernetes Networking with Cilium
+# 🔪 CNI Lab – Kubernetes Networking with Cilium
 
-This lab will help you understand how Kubernetes networking works by disabling the default CNI, installing Cilium, and observing pod communication.
+This lab guides you through installing a Kubernetes cluster **without a default CNI**, deploying **Cilium**, and experimenting with pod communication and **Network Policies**.
 
 ---
 
 ## 🌟 Objectives
 
 * Create a Kind cluster **without a default CNI**
-* Install the **Cilium CNI plugin** manually
-* Deploy test pods across namespaces
-* Test communication before and after applying **Network Policies**
+* Preload Cilium image and install it using Helm
+* Validate pod communication across namespaces
+* Apply and test **Network Policies**
 
 ---
 
-## 🚀 Step 1: Create a Kind Cluster Without Default CNI
+## 🚀 Step 1: Create Kind Cluster Without CNI
 
-Create a `kind-config.yaml` file:
-
+Create `kind-config.yaml`:
 ```yaml
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 name: cni-lab
-networking:
-  disableDefaultCNI: true
 nodes:
   - role: control-plane
-    image: kindest/node:v1.32.0
+    image: kindest/node:v1.32.3
+  - role: worker
+  - role: worker
+  - role: worker
+networking:
+  disableDefaultCNI: true
 ```
 
-Then create the cluster:
-
+Create the cluster:
 ```bash
 kind create cluster --config kind-config.yaml
 ```
-
-> ⚠️ Pods won't start until a CNI is installed.
+> Pods will stay **Pending** until a CNI is installed.
 
 ---
 
-## 🌐 Step 2: Install Cilium CLI & CNI
+## 🚨 Step 2: Show Cluster is Waiting for CNI
 
-### 🖥️ macOS
+```bash
+kubectl get pods -A
+kubectl describe pod <pod-name> -n <namespace>
+kubectl describe node <node-name>
+```
+> Look for `NetworkUnavailable=True` and scheduling issues
 
+---
+
+## 🌐 Step 3: Preload Cilium Image
+
+```bash
+docker pull quay.io/cilium/cilium:v1.17.5
+kind load docker-image quay.io/cilium/cilium:v1.17.5 --name cni-lab
+```
+
+---
+
+## 🔧 Step 4: Install Cilium Using Helm
+
+### Setup Helm repo
+```bash
+helm repo add cilium https://helm.cilium.io/
+helm repo update
+```
+
+### Install Cilium with Helm
+```bash
+helm install cilium cilium/cilium \
+  --version 1.17.5 \
+  --namespace kube-system \
+  --set image.pullPolicy=IfNotPresent \
+  --set ipam.mode=kubernetes
+```
+
+---
+
+## 🔍 Optional: Validate cgroup namespaces (advanced) (Only for linux users)
+```bash
+docker exec cni-lab-control-plane ls -al /proc/self/ns/cgroup
+docker exec cni-lab-worker ls -al /proc/self/ns/cgroup
+ls -al /proc/self/ns/cgroup
+```
+> Ensure the cgroup values are different between host and containers.
+
+---
+
+## 🎓 Step 5: Install and Use Cilium CLI
+
+### macOS (brew)
 ```bash
 brew install cilium-cli
-cilium install --version 1.14.6 --cluster-name cni-lab --wait
 ```
 
-### 🐧 Linux
-
+### Linux (manual)
 ```bash
-curl -LO https://github.com/cilium/cilium-cli/releases/latest/download/cilium-linux-amd64.tar.gz
-sudo tar -xvzf cilium-linux-amd64.tar.gz -C /usr/local/bin
-cilium install --version 1.14.6 --cluster-name cni-lab --wait
+CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)
+CLI_ARCH=amd64
+[ "$(uname -m)" = "aarch64" ] && CLI_ARCH=arm64
+curl -LO https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz
+sudo tar -xvzf cilium-linux-${CLI_ARCH}.tar.gz -C /usr/local/bin
 ```
 
-### 🪟 Windows (via PowerShell)
-
-1. Download the CLI from:
-   [https://github.com/cilium/cilium-cli/releases](https://github.com/cilium/cilium-cli/releases)
-2. Extract and add the path to your system `PATH`
-3. Run:
-
-```powershell
-cilium install --version 1.14.6 --cluster-name cni-lab --wait
-```
-
-### ✅ Validate the installation
-
+### ✅ Validate Installation
 ```bash
-cilium status
-kubectl get pods -n kube-system -l k8s-app=cilium
+cilium status --wait
 ```
 
 ---
-
-## 📄 Step 3: Deploy Test Pods in Different Namespaces
-
+## 📄 Step 6: Deploy Test Pods Across Namespaces
 ```bash
 kubectl create ns ns-a
 kubectl create ns ns-b
 
-kubectl run ping-a --image=busybox -n ns-a --restart=Never -- sleep 3600
-kubectl run ping-b --image=busybox -n ns-b --restart=Never -- sleep 3600
+kubectl run web-a --image=nginx -n ns-a --restart=Never --port=80
+kubectl run web-b --image=nginx -n ns-b --restart=Never --port=80
 
 kubectl get pods -A -o wide
 ```
 
-Wait until both pods are Running. Then test communication:
-
+### Create Headless Service for DNS Resolution
+```yaml
+# web-b-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-b
+  namespace: ns-b
+spec:
+  clusterIP: None
+  selector:
+    run: web-b
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+Apply the service and label:
 ```bash
-kubectl exec -n ns-a ping-a -- ping ping-b.ns-b.svc.cluster.local
+kubectl label pod web-b run=web-b -n ns-b
+kubectl apply -f web-b-svc.yaml
 ```
 
-> 🚀 Pods should be able to ping each other initially (before any policy).
+### Test Communication
+```bash
+kubectl exec -n ns-a web-a -- curl -s web-b.ns-b.svc.cluster.local
+```
 
 ---
 
-## 🔒 Step 4: Apply a Network Policy to Restrict Traffic
+## 🔒 Step 7: Apply Network Policy
 
-Create a file `deny-ns-b.yaml`:
-
+Create `deny-ns-b.yaml`:
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -110,27 +162,31 @@ metadata:
 spec:
   podSelector: {}
   policyTypes:
-  - Ingress
+    - Ingress
 ```
 
-Apply the policy:
-
+Apply it:
 ```bash
 kubectl apply -f deny-ns-b.yaml
 ```
 
-Try the ping again:
-
+Re-test communication:
 ```bash
-kubectl exec -n ns-a ping-a -- ping ping-b.ns-b.svc.cluster.local
+kubectl exec -n ns-a web-a -- curl -s web-b.ns-b.svc.cluster.local
 ```
-
-> ❌ Communication should now be **blocked**.
+> ❌ Curl should now fail due to denied ingress.
 
 ---
 
-## 🧹 Step 5: Clean Up
+## 🧪 Optional: Test Connectivity with Cilium CLI
+```bash
+cilium connectivity test
+```
+> Run extended tests to validate end-to-end networking.
 
+---
+
+## 🧹 Step 8: Clean Up
 ```bash
 kind delete cluster --name cni-lab
 ```
@@ -139,14 +195,16 @@ kind delete cluster --name cni-lab
 
 ## ✅ Checklist
 
-* [ ] Created a Kind cluster with CNI disabled
-* [ ] Installed Cilium CNI plugin successfully
-* [ ] Deployed test pods and validated initial communication
-* [ ] Applied a NetworkPolicy and confirmed restricted access
-* [ ] Deleted the cluster
+* [x] Created a Kind cluster with CNI disabled
+* [x] Installed Cilium CNI using Helm
+* [x] Validated installation using `cilium status`
+* [x] Deployed nginx pods across namespaces
+* [x] Created Service for DNS-based communication
+* [x] Applied a Network Policy to restrict traffic
+* [x] (Optional) Ran `cilium connectivity test`
+* [x] Cleaned up the environment
 
 ---
 
-## 💬 What's Next?
-
-You're now familiar with how CNI plugins work and how Network Policies enforce segmentation. In a future lab, you'll explore CRI and CSI in more depth.
+## 💬 Next Steps
+Explore how CRI (container runtimes) and CSI (storage provisioning) extend Kubernetes capabilities. These are covered in the next labs.

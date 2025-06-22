@@ -103,6 +103,18 @@ kind version
 
 ---
 
+
+### ✅ helm (Kubernetes package manager)
+
+#### Linux / macOS / Windows
+
+```bash
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+
+---
 #### 🪟 Windows (PowerShell)
 
 ```powershell
@@ -141,6 +153,8 @@ Add `kind.exe` to your `PATH` to run it from any terminal.
 </details>
 
 ---
+
+
 
 ## 🚀 Step 2: Create a Kind Cluster (Kubernetes v1.32)
 
@@ -187,7 +201,7 @@ kubectl explain deployment.spec.template
 
 ## ✅ Checklist
 
-* [ ] All tools (`kubectl`, `kind`) installed and working
+* [ ] All tools (`kubectl`, `kind`, `helm`) installed and working
 * [ ] Kind cluster created with Kubernetes v1.32
 * [ ] `kubectl` returns cluster info and node details
 * [ ] Able to use `kubectl explain` and list API resources
