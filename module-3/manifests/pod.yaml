@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl-sa-test
+  namespace: rbac-lab
+spec:
+  serviceAccountName: viewer-sa
+  containers:
+  - name: curl
+    image: curlimages/curl:8.7.1
+    command: ["sleep"]
+    args: ["3600"]
