@@ -24,8 +24,11 @@ nodes:
   - role: control-plane
     image: kindest/node:v1.32.3
   - role: worker
+    image: kindest/node:v1.32.3
   - role: worker
+    image: kindest/node:v1.32.3
   - role: worker
+    image: kindest/node:v1.32.3
 networking:
   disableDefaultCNI: true
 ```
