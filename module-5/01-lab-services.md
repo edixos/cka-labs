@@ -147,5 +147,6 @@ kubectl delete svc webapp webapp-nodeport webapp-lb
 ```
 
 ---
+We will use the same cluster for the next labs, so we won't delete the cluster itself.
 
 👌 End of Lab 5.1 – You’ve explored service types and validated cluster DNS with CoreDNS and MetalLB
