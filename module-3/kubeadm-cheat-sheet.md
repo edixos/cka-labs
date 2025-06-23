@@ -127,4 +127,27 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 ---
 
+## Backup and Recovery etcd
+
+### Backup etcd Data
+
+```bash
+sudo ETCDCTL_API=3 etcdctl snapshot save /var/lib/etcd/snapshot.db \
+  --endpoints=https://<MASTER_IP>:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key
+```
+
+### Restore etcd Data
+
+```bash
+sudo ETCDCTL_API=3  etcdctl snapshot restore /var/lib/etcd/snapshot.db \
+  --endpoints=https://127.0.0.1:2379 \
+  --data-dir=/var/lib/etcd-backup \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key
+```
+
 ✅ Use this cheatsheet as your go-to reference for cluster setup, recovery, and upgrades!
