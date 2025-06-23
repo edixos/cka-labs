@@ -70,4 +70,4 @@ PRs and feedback are welcome! If you're an instructor or contributor, feel free 
 
 ---
 
-📬 For questions or suggestions, please contact \[your-name or org] at \[your-contact-email].
+📬 For questions or suggestions, please contact \[hello] at \[edixos.com].
