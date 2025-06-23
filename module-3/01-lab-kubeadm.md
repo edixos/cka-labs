@@ -113,6 +113,7 @@ trainee-demo-master.europe-west1-b.c.ekp-dev.internal   Ready    control-plane  
 trainee-demo-worker.europe-west1-b.c.ekp-dev.internal   Ready    <none>          12m   v1.33.2
 ```
 
+> Nice to have: If you have want you create a backup of your cluster database before the upgrade, you can use tools like `etcdctl`.
 
 ---
 
