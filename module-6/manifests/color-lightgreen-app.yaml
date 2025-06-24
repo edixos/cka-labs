@@ -1,0 +1,7 @@
+apiVersion: kro.run/v1alpha1
+kind: Application
+metadata:
+  name: color-lightgreen
+spec:
+  name: color-lightgreen-app
+  color: "lightgreen"

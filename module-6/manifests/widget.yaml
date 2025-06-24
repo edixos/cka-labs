@@ -1,0 +1,6 @@
+apiVersion: training.io/v1
+kind: Widget
+metadata:
+  name: my-widget
+spec:
+  size: large

@@ -1,0 +1,7 @@
+apiVersion: kro.run/v1alpha1
+kind: Application
+metadata:       
+  name: color-red
+spec:
+  name: color-red-app
+  color: "red"

@@ -1,0 +1,59 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: my-color-application
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: Application
+    spec:
+      name: string
+      image: string | default="pj3677/color-app:latest"
+      color: string | default="red"
+      commonlabel: string | default="color-application"
+    status:
+      deploymentConditions: ${deployment.status.conditions}
+      availableReplicas: ${deployment.status.availableReplicas}
+  resources:
+    - id: deployment
+      template:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${schema.spec.name} 
+          labels:
+            purpose: ${schema.spec.commonlabel}
+        spec:
+          replicas: 2
+          selector:
+            matchLabels:
+              app: ${schema.spec.name}
+          template:
+            metadata:
+              labels:
+                app: ${schema.spec.name}
+                purpose: ${schema.spec.commonlabel}
+            spec:
+              containers:
+                - name: ${schema.spec.name}
+                  image: ${schema.spec.image} 
+                  ports:
+                    - containerPort: 3000
+                  env:
+                    - name: BG_COLOR
+                      value: ${schema.spec.color}
+    - id: service
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${schema.spec.name}-service
+          labels:
+            purpose: ${schema.spec.commonlabel}
+        spec:
+          selector: ${deployment.spec.selector.matchLabels}
+          type: NodePort
+          ports:
+            - protocol: TCP
+              port: 3000
+              targetPort: 3000
