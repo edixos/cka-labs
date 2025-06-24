@@ -212,6 +212,15 @@ kubectl delete -f pod-with-pvc.yaml
 kubectl delete -f pvc.yaml
 kubectl delete -f pv-hostpath.yaml
 rm -rf /tmp/k8s-csi-lab
+
+SNAPSHOTTER_BRANCH=release-6.3
+kubectl delete -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_BRANCH}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml"
+kubectl delete -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_BRANCH}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml"
+kubectl delete -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_BRANCH}/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml"
+
+SNAPSHOTTER_VERSION=v6.3.3
+kubectl delete -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_VERSION}/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml"
+kubectl delete -f "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/${SNAPSHOTTER_VERSION}/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml"
 ```
 
 ---
