@@ -123,7 +123,7 @@ Invoke-WebRequest -Uri https://kind.sigs.k8s.io/dl/v0.29.0/kind-windows-amd64 -O
 
 Add `kind.exe` to your `PATH` to run it from any terminal.
 
-<details>
+<details open>
 <summary>🪟 How to Add kind.exe to PATH on Windows</summary>
 
 1. 📁 **Move `kind.exe` to a permanent folder**, for example:  
