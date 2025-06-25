@@ -122,31 +122,6 @@ kubectl top pods
 
 ---
 
-## 🛡️ Step 4 – Simulate Component Issues
-
-1. List kube-system pods:
-
-```bash
-kubectl get pods -n kube-system
-```
-
-2. Scale down `kube-proxy`:
-
-```bash
-kubectl -n kube-system scale daemonset kube-proxy --replicas=0
-```
-
-3. Observe system behavior:
-
-```bash
-kubectl get events -n kube-system
-kubectl logs -n kube-system <control-plane-pod>
-```
-
-Use `journalctl -u kubelet` (from VM/host) for deeper inspection.
-
----
-
 ## 🧩 Final Challenge – Custom Logging & Resource Issue
 
 🔸 **Goal:** Create a pod called `logger-challenge` that logs to a file instead of stdout.

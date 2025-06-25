@@ -238,13 +238,13 @@ Create a new `App` instance:
 ## Cleanup
 
 ```bash
-kubectl delete -f module-6/manifests/widget-crd.yaml
 kubectl delete -f module-6/manifests/widget.yaml
 kubectl delete -f module-6/manifests/rgd-app.yaml
 kubectl delete -f module-6/manifests/color-lightgreen-app.yaml
 kubectl delete -f module-6/manifests/color-red-app.yaml
 helm uninstall kro -n kro
 kubectl delete namespace kro
+kubectl delete -f module-6/manifests/widget-crd.yaml
 ```
 
 🎉 **End of Lab 6.2** – You explored CRDs and implemented dynamic resource reconciliation with Kro!
