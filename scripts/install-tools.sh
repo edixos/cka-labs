@@ -6,7 +6,7 @@ echo "🔧 Installing Kubernetes tools on Ubuntu 24.04..."
 
 # Update and install base packages
 sudo apt-get update -y
-sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common
+sudo apt-get install -y vim apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common
 
 # --- Docker Installation from Official Repository ---
 echo "🐳 Setting up Docker apt repository..."
@@ -47,4 +47,15 @@ echo "🚀 Installing Helm..."
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 echo "✅ All tools installed!"
-echo "🔁 Please log out and log back in (or run 'newgrp docker') to use Docker without sudo."
+echo ""
+echo "🎉 Installation completed successfully!"
+echo ""
+echo "🔐 IMPORTANT: To use Docker without sudo, you need to reload your user session."
+echo "  ➤ Either log out and log back in,"
+echo "  ➤ Or run: exec su -l \$USER"
+echo ""
+echo "After that, verify with:"
+echo "  groups      # You should see 'docker' in the list"
+echo "  docker ps   # Should work without sudo"
+echo ""
+echo "💡 If it doesn't, try restarting your session or the machine."
