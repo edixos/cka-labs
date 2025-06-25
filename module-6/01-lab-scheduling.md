@@ -83,7 +83,25 @@ kubectl get pods -o wide
 apiVersion: v1
 kind: Pod
 metadata:
-  name: anti-affinity-pod
+  name: anti-affinity-pod-1
+  labels:
+    app: nginx
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app: nginx
+          topologyKey: "kubernetes.io/hostname"
+  containers:
+  - name: nginx
+    image: nginx
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: anti-affinity-pod-2
   labels:
     app: nginx
 spec:
@@ -147,7 +165,7 @@ kubectl get pods -o wide
 
 * Has a `nodeSelector` for `disktype=ssd`
 * Has node affinity to `zone=east`
-* Tolerates a taint `env=test:NoSchedule`
+* Tolerates a taint `architecture=amd64:NoSchedule`
 * Has anti-affinity against other pods with label `app=nginx`
 
 🔸 Label and taint a node accordingly, then test scheduling behavior.

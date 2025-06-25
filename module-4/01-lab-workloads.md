@@ -53,6 +53,8 @@ kubectl rollout undo deployment/webapp
 kubectl apply -f statefulset.yaml  # Provided in repo
 kubectl get pods -o wide
 kubectl get pvc
+
+kubectl run -it dnsutils --image=busybox:1.28 --restart=Never --rm -- nslookup webapp
 ```
 
 ---

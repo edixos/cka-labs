@@ -9,12 +9,6 @@
 ## 🔧 Prerequisites
 - A running **Kind cluster** with a **CNI that supports Network Policies** (e.g., Calico or Cilium)
 
-## 🛠️ Step 1 – Create Namespace & Pods
-```bash
-kubectl create ns lab5-netpol
-kubectl config set-context --current --namespace=lab5-netpol
-```
-
 ### Create Pods with Labels
 ```bash
 kubectl run frontend --image=nginx --labels=app=frontend --expose --port=80
@@ -42,7 +36,7 @@ spec:
     - Ingress
 ```
 ```bash
-kubectl apply -f default-deny.yaml
+kubectl apply -f module-5/manifests/default-deny.yaml
 ```
 
 ### Re-test from `tester` pod
@@ -71,14 +65,14 @@ spec:
               app: frontend
 ```
 ```bash
-kubectl apply -f allow-frontend.yaml
+kubectl apply -f module-5/manifests/allow-frontend.yaml
 ```
 
 ---
 
 ## 🔍 Test with frontend pod
 ```bash
-kubectl exec -it frontend -- wget -O- backend
+kubectl exec -it frontend -- curl backend
 ```
 ✅ Should succeed
 

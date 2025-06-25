@@ -18,4 +18,11 @@ spec:
       containers:
       - image: nginx
         name: nginx
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
         resources: {}

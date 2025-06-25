@@ -250,7 +250,7 @@ spec:
 ```
 
 ```bash
-kubectl apply -f ingress.yaml
+kubectl apply -f module-5/manifests/ingress.yaml
 ```
 
 

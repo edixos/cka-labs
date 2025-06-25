@@ -33,6 +33,7 @@ A curated list of **free**, high-quality resources in English to prepare for the
 * [Walid Shaari’s CKA Resource Collection](https://github.com/walidshaari/Kubernetes-Certified-Administrator)
 * [Shubham Tatvamasi’s CKA Lab](https://github.com/ShubhamTatvamasi/cka)
 * [Fahmi Fareed’s Mock Exams](https://github.com/fahmifareed/Kube-Practice-Tests)
+* [NetworkPolicies by Ahmet](https://github.com/ahmetb/kubernetes-network-policy-recipes?tab=readme-ov-file)
 
 ---
 
