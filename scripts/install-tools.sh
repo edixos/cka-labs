@@ -4,13 +4,26 @@ set -euo pipefail
 
 echo "🔧 Installing Kubernetes tools on Ubuntu 24.04..."
 
-# Update and install prerequisites
+# Update and install base packages
 sudo apt-get update -y
-sudo apt-get install -y apt-transport-https ca-certificates curl gpg lsb-release software-properties-common
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common
 
-# --- Docker Installation ---
-echo "🐳 Installing Docker..."
-sudo apt-get install -y docker.io
+# --- Docker Installation from Official Repository ---
+echo "🐳 Setting up Docker apt repository..."
+
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update -y
+
+echo "📦 Installing Docker Engine..."
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo systemctl enable --now docker
 
 # Add current user to docker group
@@ -34,4 +47,4 @@ echo "🚀 Installing Helm..."
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 echo "✅ All tools installed!"
-echo "🧼 You may need to log out and back in to use Docker without sudo."
+echo "🔁 Please log out and log back in (or run 'newgrp docker') to use Docker without sudo."
