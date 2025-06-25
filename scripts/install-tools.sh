@@ -6,7 +6,7 @@ echo "🔧 Installing Kubernetes tools on Ubuntu 24.04..."
 
 # Update and install base packages
 sudo apt-get update -y
-sudo apt-get install -y vim apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common
+sudo apt-get install -y vim apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common bash-completion
 
 # --- Docker Installation from Official Repository ---
 echo "🐳 Setting up Docker apt repository..."
@@ -36,6 +36,14 @@ curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/kubectl
 
+# Add alias and autocomplete
+echo "⚙️ Configuring kubectl alias and autocompletion..."
+{
+  echo 'alias k=kubectl'
+  echo 'source <(kubectl completion bash)'
+  echo 'complete -o default -F __start_kubectl k'
+} >> ~/.bashrc
+
 # --- Kind Installation ---
 echo "📦 Installing Kind..."
 curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
@@ -54,8 +62,8 @@ echo "🔐 IMPORTANT: To use Docker without sudo, you need to reload your user s
 echo "  ➤ Either log out and log back in,"
 echo "  ➤ Or run: exec su -l \$USER"
 echo ""
-echo "After that, verify with:"
-echo "  groups      # You should see 'docker' in the list"
-echo "  docker ps   # Should work without sudo"
+echo "📘 Alias and autocomplete will be available next login. To enable now, run:"
+echo "  source ~/.bashrc"
 echo ""
-echo "💡 If it doesn't, try restarting your session or the machine."
+echo "Then test:"
+echo "  k get pods"
