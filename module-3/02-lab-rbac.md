@@ -40,7 +40,7 @@ kubectl get serviceaccounts -n rbac-lab
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: pod-reader
+  name: viewer-sa
   namespace: rbac-lab
 rules:
 - apiGroups: [""]
