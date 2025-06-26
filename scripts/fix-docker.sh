@@ -22,11 +22,4 @@ echo "🔄 Restarting Docker..."
 sudo systemctl daemon-reexec
 sudo systemctl restart docker
 sleep 5
-
-echo "🧹 Deleting any existing kind cluster: $CLUSTER_NAME..."
-kind delete cluster --name "$CLUSTER_NAME" || true
-
-echo "🚀 Creating kind cluster with image: $KIND_IMAGE..."
-kind create cluster --name "$CLUSTER_NAME" --image "$KIND_IMAGE"
-
-echo "✅ Cluster '$CLUSTER_NAME' created successfully."
+echo "✅ Docker restarted."
