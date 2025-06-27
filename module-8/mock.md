@@ -40,7 +40,7 @@ db.password = secretpassword
 
 ## Question 8: Create a StatefulSet
 **Question:**
-Create a StatefulSet named `mysql-statefulset` in the `default` namespace. The statefulset should run the `postgres` image and should have 3 replicas. Each replica should have a persistent volume claim named `mysql-pvc` that requests 1Gi of storage.
+Create a StatefulSet named `postgres-statefulset` in the `default` namespace. The statefulset should run the `postgres` image and should have 3 replicas. Each replica should have a persistent volume claim named `postgres-pvc` that requests 1Gi of storage.
 
 ## Question 9: Create a Pod with Resource Requests and Limits
 **Question:**
@@ -70,3 +70,7 @@ Create a Service Account named `service-reader` in the `default` namespace. Then
 ## Question 15: daemonSet
 **Question:**
 Create a DaemonSet named `log-collector` in the `default` namespace that runs the `fluentd` image. The DaemonSet should ensure that a pod is running on every node in the cluster. Verify that the DaemonSet is running correctly by checking the status of the pods.
+
+## Question 16: Priority Class
+**Question:**
+Create a Priority Class named `high-priority` with a value of `1000`. Then, create a pod named `priority-pod` in the `default` namespace that uses the `high-priority` priority class. Verify that the pod is scheduled with the correct priority by checking its details.
